@@ -1,5 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./android-panel.css";
+import "./jarvis-wake.css";
+
+
 
 export const metadata: Metadata = {
   title: "ULTRON Orb UI",

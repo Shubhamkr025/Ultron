@@ -233,3 +233,93 @@ body {
     display: none;
   }
 }
+
+/* ——— HUD Subtitles & Agent Telemetry Overlay ——— */
+.hud-subtitles {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  width: 90%;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.subtitle-box {
+  background: rgba(12, 6, 2, 0.75);
+  border: 1px solid rgba(255, 170, 48, 0.5);
+  border-radius: 6px;
+  padding: 10px 18px;
+  color: #ffcc66;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 0 20px rgba(255, 140, 20, 0.2);
+  text-shadow: 0 0 8px rgba(255, 170, 48, 0.8);
+  animation: hudPulse 3s infinite ease-in-out;
+  text-align: center;
+}
+
+.subtitle-speaker {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #ffaa30;
+  margin-bottom: 4px;
+  opacity: 0.85;
+}
+
+.subtitle-speaker.user {
+  color: #66ccff;
+  text-shadow: 0 0 8px rgba(102, 204, 255, 0.8);
+}
+
+.hud-top-right {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.hud-badge {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  padding: 4px 8px;
+  background: rgba(20, 10, 0, 0.6);
+  border: 1px solid rgba(255, 170, 48, 0.35);
+  border-radius: 3px;
+  color: #ffaa30;
+  text-shadow: 0 0 6px rgba(255, 170, 48, 0.7);
+}
+
+.hud-badge.active {
+  background: rgba(80, 40, 0, 0.6);
+  border-color: #ffcc66;
+  color: #ffcc66;
+  box-shadow: 0 0 10px rgba(255, 170, 48, 0.3);
+}
+
+.hud-badge.listening {
+  border-color: #66ffcc;
+  color: #66ffcc;
+  text-shadow: 0 0 8px rgba(102, 255, 204, 0.9);
+}
+
+@keyframes hudPulse {
+  0%, 100% {
+    border-color: rgba(255, 170, 48, 0.5);
+  }
+  50% {
+    border-color: rgba(255, 200, 100, 0.8);
+  }
+}
+

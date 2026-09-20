@@ -11,9 +11,21 @@ const MODEL_URL =
 
 // Landmark indices (MediaPipe hand model)
 const WRIST = 0;
+const THUMB_MCP = 2;
+const THUMB_IP = 3;
 const THUMB_TIP = 4;
+const INDEX_MCP = 5;
+const INDEX_PIP = 6;
 const INDEX_TIP = 8;
 const MIDDLE_MCP = 9;
+const MIDDLE_PIP = 10;
+const MIDDLE_TIP = 12;
+const RING_MCP = 13;
+const RING_PIP = 14;
+const RING_TIP = 16;
+const PINKY_MCP = 17;
+const PINKY_PIP = 18;
+const PINKY_TIP = 20;
 
 // Pinch hysteresis: thumb–index distance relative to hand size
 const PINCH_ON = 0.32;
@@ -24,11 +36,13 @@ const ROTATE_SPEED = 5.0;
 // Smoothing factor for grab-point tracking (0..1, higher = snappier)
 const SMOOTHING = 0.4;
 
-export type GestureMode = "idle" | "spin" | "zoom";
+export type GestureMode = "idle" | "spin" | "zoom" | "stop" | "status" | "wake" | "reset";
+export type DetectedGesture = "NONE" | "PINCH" | "OPEN_PALM" | "THUMBS_UP" | "PEACE" | "FIST";
 
 export interface TrackerStatus {
   hands: number;
   mode: GestureMode;
+  detectedGesture?: DetectedGesture;
 }
 
 export interface HandTrackerCallbacks {
@@ -37,6 +51,7 @@ export interface HandTrackerCallbacks {
   /** Called when both hands pinch and spread/close: multiply camera distance by factor. */
   onZoom(factor: number): void;
   onStatus(status: TrackerStatus): void;
+  onGestureTrigger?: (gesture: DetectedGesture) => void;
 }
 
 interface Point {
@@ -64,7 +79,8 @@ export class HandTracker {
   private prevMode: GestureMode = "idle";
   private prevSpinGrab: Point | null = null;
   private prevZoomDist: number | null = null;
-  private lastStatus: TrackerStatus = { hands: 0, mode: "idle" };
+  private lastStatus: TrackerStatus = { hands: 0, mode: "idle", detectedGesture: "NONE" };
+  private lastGestureTriggerTime = 0;
 
   constructor(
     video: HTMLVideoElement,
@@ -121,7 +137,7 @@ export class HandTracker {
     this.prevZoomDist = null;
     const ctx = this.overlay.getContext("2d");
     ctx?.clearRect(0, 0, this.overlay.width, this.overlay.height);
-    this.emitStatus({ hands: 0, mode: "idle" });
+    this.emitStatus({ hands: 0, mode: "idle", detectedGesture: "NONE" });
   }
 
   private loop = () => {
@@ -137,19 +153,72 @@ export class HandTracker {
     this.drawOverlay(result.landmarks);
   };
 
+  private classifyGesture(lm: NormalizedLandmark[]): DetectedGesture {
+    const wrist = lm[WRIST];
+    const handScale = dist2d(wrist, lm[MIDDLE_MCP]);
+    if (handScale < 1e-6) return "NONE";
+
+    const isExtended = (tipIdx: number, pipIdx: number) => {
+      return dist2d(lm[tipIdx], wrist) > dist2d(lm[pipIdx], wrist) * 1.15;
+    };
+
+    const isFolded = (tipIdx: number, mcpIdx: number) => {
+      return dist2d(lm[tipIdx], wrist) < dist2d(lm[mcpIdx], wrist) * 1.1;
+    };
+
+    const thumbExtended = dist2d(lm[THUMB_TIP], lm[PINKY_MCP]) > handScale * 1.1;
+    const indexExt = isExtended(INDEX_TIP, INDEX_PIP);
+    const middleExt = isExtended(MIDDLE_TIP, MIDDLE_PIP);
+    const ringExt = isExtended(RING_TIP, RING_PIP);
+    const pinkyExt = isExtended(PINKY_TIP, PINKY_PIP);
+
+    const pinchRatio = dist2d(lm[THUMB_TIP], lm[INDEX_TIP]) / handScale;
+    if (pinchRatio < PINCH_ON) return "PINCH";
+
+    // Open Palm: All 5 fingers extended
+    if (indexExt && middleExt && ringExt && pinkyExt && thumbExtended) {
+      return "OPEN_PALM";
+    }
+
+    // Peace Sign: Index and Middle extended, Ring and Pinky folded
+    if (indexExt && middleExt && isFolded(RING_TIP, RING_MCP) && isFolded(PINKY_TIP, PINKY_MCP)) {
+      return "PEACE";
+    }
+
+    // Thumbs Up: Thumb pointing upward relative to wrist, other fingers folded
+    const thumbUpward = lm[THUMB_TIP].y < lm[WRIST].y - handScale * 0.5;
+    if (thumbUpward && isFolded(INDEX_TIP, INDEX_MCP) && isFolded(MIDDLE_TIP, MIDDLE_MCP) && isFolded(RING_TIP, RING_MCP)) {
+      return "THUMBS_UP";
+    }
+
+    // Fist: All fingers folded in
+    if (isFolded(INDEX_TIP, INDEX_MCP) && isFolded(MIDDLE_TIP, MIDDLE_MCP) && isFolded(RING_TIP, RING_MCP) && isFolded(PINKY_TIP, PINKY_MCP)) {
+      return "FIST";
+    }
+
+    return "NONE";
+  }
+
   private processHands(
     landmarks: NormalizedLandmark[][],
     labels: string[],
   ): void {
     const pinchedGrabs: Point[] = [];
     const seen = new Set<string>();
+    let primaryGesture: DetectedGesture = "NONE";
 
-    landmarks.forEach((lm, i) => {
+    for (let i = 0; i < landmarks.length; i++) {
+      const lm = landmarks[i];
       const label = labels[i];
       seen.add(label);
 
+      const detected = this.classifyGesture(lm);
+      if (detected !== "NONE" && primaryGesture === "NONE") {
+        primaryGesture = detected;
+      }
+
       const handScale = dist2d(lm[WRIST], lm[MIDDLE_MCP]);
-      if (handScale < 1e-6) return;
+      if (handScale < 1e-6) continue;
       const pinchRatio = dist2d(lm[THUMB_TIP], lm[INDEX_TIP]) / handScale;
 
       // Mirrored so hand-right = screen-right from the user's perspective
@@ -174,15 +243,40 @@ export class HandTracker {
       };
 
       if (state.pinching) pinchedGrabs.push(state.grab);
-    });
+    }
 
     // Drop state for hands that left the frame
     for (const key of this.handStates.keys()) {
       if (!seen.has(key)) this.handStates.delete(key);
     }
 
-    const mode: GestureMode =
-      pinchedGrabs.length >= 2 ? "zoom" : pinchedGrabs.length === 1 ? "spin" : "idle";
+    let mode: GestureMode = "idle";
+    const activeGesture: DetectedGesture = primaryGesture;
+
+    if (pinchedGrabs.length >= 2) {
+      mode = "zoom";
+    } else if (pinchedGrabs.length === 1) {
+      mode = "spin";
+    } else if (activeGesture === "OPEN_PALM") {
+      mode = "stop";
+    } else if (activeGesture === "THUMBS_UP") {
+      mode = "status";
+    } else if (activeGesture === "PEACE") {
+      mode = "wake";
+    } else if (activeGesture === "FIST") {
+      mode = "reset";
+    }
+
+    // Trigger discrete gesture callbacks with debouncing (800ms)
+    const now = performance.now();
+    if (
+      primaryGesture !== "NONE" &&
+      primaryGesture !== "PINCH" &&
+      now - this.lastGestureTriggerTime > 800
+    ) {
+      this.lastGestureTriggerTime = now;
+      this.callbacks.onGestureTrigger?.(primaryGesture);
+    }
 
     // Reset reference points on any mode change to avoid jumps
     if (mode !== this.prevMode) {
@@ -207,20 +301,20 @@ export class HandTracker {
         pinchedGrabs[0].y - pinchedGrabs[1].y,
       );
       if (this.prevZoomDist && d > 1e-4) {
-        // Spread hands apart -> factor < 1 -> camera moves closer
         const factor = Math.min(1.18, Math.max(0.85, this.prevZoomDist / d));
         this.callbacks.onZoom(factor);
       }
       this.prevZoomDist = d;
     }
 
-    this.emitStatus({ hands: landmarks.length, mode });
+    this.emitStatus({ hands: landmarks.length, mode, detectedGesture: primaryGesture });
   }
 
   private emitStatus(status: TrackerStatus): void {
     if (
       status.hands !== this.lastStatus.hands ||
-      status.mode !== this.lastStatus.mode
+      status.mode !== this.lastStatus.mode ||
+      status.detectedGesture !== this.lastStatus.detectedGesture
     ) {
       this.lastStatus = status;
       this.callbacks.onStatus(status);
@@ -236,7 +330,6 @@ export class HandTracker {
     for (const lm of landmarks) {
       const thumb = lm[THUMB_TIP];
       const index = lm[INDEX_TIP];
-      // Overlay canvas sits on the mirrored video preview, so mirror x here too
       const tx = (1 - thumb.x) * width;
       const ty = thumb.y * height;
       const ix = (1 - index.x) * width;

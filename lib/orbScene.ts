@@ -5,6 +5,8 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
+export type VisualState = "idle" | "listening" | "processing" | "executing" | "success" | "error";
+
 export interface OrbSceneApi {
   /** Rotate the camera around the orb by the given angles (radians). */
   rotateBy(deltaTheta: number, deltaPhi: number): void;
@@ -13,6 +15,7 @@ export interface OrbSceneApi {
   zoomIn(): void;
   zoomOut(): void;
   resetView(): void;
+  setVisualState(state: VisualState): void;
   dispose(): void;
 }
 
@@ -802,14 +805,26 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
       });
     }
 
-    // Bloom pulse
-    bloom.strength = 1.6 + Math.sin(t * 0.8) * 0.3;
+    // Bloom pulse modulated by state
+    let targetBloom = 1.6;
+    if (currentState === "listening") targetBloom = 2.4 + Math.sin(t * 4.0) * 0.4;
+    else if (currentState === "processing") targetBloom = 2.2 + Math.sin(t * 8.0) * 0.5;
+    else if (currentState === "executing" || currentState === "success") targetBloom = 3.2;
+    else if (currentState === "error") targetBloom = 2.8 + Math.sin(t * 12.0) * 0.6;
+
+    bloom.strength = THREE.MathUtils.lerp(bloom.strength, targetBloom, 0.1);
 
     // Update chromatic aberration time
     chromaticPass.uniforms.uTime.value = t;
 
     controls.update();
     composer.render();
+  }
+
+  let currentState: VisualState = "idle";
+
+  function setVisualState(state: VisualState) {
+    currentState = state;
   }
 
   animate();
@@ -853,6 +868,7 @@ export function createOrbScene(container: HTMLElement): OrbSceneApi {
     zoomIn: () => zoomBy(0.65),
     zoomOut: () => zoomBy(1.55),
     resetView,
+    setVisualState,
     dispose,
   };
 }

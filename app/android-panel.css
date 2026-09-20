@@ -1,0 +1,13 @@
+.android-panel{background:rgba(8,4,0,.88);border:1px solid rgba(255,170,48,.55);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px;width:320px;backdrop-filter:blur(6px)}
+.android-panel-title{font-size:10px;letter-spacing:.25em;color:#ffaa30;border-bottom:1px solid rgba(255,170,48,.3);padding-bottom:6px}
+.android-device-list{display:flex;flex-direction:column;gap:4px}
+.android-device-item{display:flex;align-items:center;gap:8px;padding:5px 8px;border:1px solid rgba(255,170,48,.25);border-radius:4px;font-size:11px;color:#ffaa30;cursor:pointer;transition:all .15s ease}
+.android-device-item:hover,.android-device-item.selected{background:rgba(80,40,0,.55);border-color:#ffcc66;color:#ffcc66}
+.device-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#00ff66;box-shadow:0 0 6px #00ff66;flex-shrink:0}
+.android-no-devices{font-size:10px;color:rgba(255,170,48,.55);padding:4px}
+.android-input-row{display:flex;gap:6px;align-items:center}
+.android-input{flex:1;background:rgba(20,10,0,.75);border:1px solid rgba(255,170,48,.4);border-radius:4px;color:#ffcc66;font-family:monospace;font-size:12px;padding:6px 8px;outline:none;transition:border-color .15s}
+.android-input::placeholder{color:rgba(255,170,48,.35)}
+.android-input:focus{border-color:#ffcc66}
+.unlock-btn{background:rgba(0,60,0,.5) !important;border-color:rgba(0,255,100,.6) !important;color:#00ff66 !important;text-shadow:0 0 8px rgba(0,255,100,.8) !important}
+.unlock-btn:hover{background:rgba(0,100,0,.7) !important;border-color:#00ff66 !important}

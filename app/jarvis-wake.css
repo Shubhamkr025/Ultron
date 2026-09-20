@@ -1,0 +1,254 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   JARVIS WAKE-UP TRANSITION — Cinematic boot-up overlay with expanding rings,
+   scan bar, glowing logo, and text fade-in. Triggered on clap detect.
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.jarvis-wake-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.97) 100%);
+  animation: wakeOverlayIn 0.4s ease-out forwards;
+}
+
+.jarvis-wake-overlay.online {
+  animation: wakeOverlayOut 1.0s ease-in 0.2s forwards;
+}
+
+@keyframes wakeOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes wakeOverlayOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ─── Expanding Rings ─────────────────────────────────────────────────────── */
+.jarvis-wake-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wake-ring {
+  position: absolute;
+  border: 1px solid rgba(255, 170, 48, 0.35);
+  border-radius: 50%;
+  opacity: 0;
+}
+
+.wake-ring-1 {
+  width: 80px;
+  height: 80px;
+  animation: ringExpand 2.4s ease-out 0.1s forwards;
+}
+
+.wake-ring-2 {
+  width: 80px;
+  height: 80px;
+  animation: ringExpand 2.4s ease-out 0.35s forwards;
+  border-color: rgba(255, 140, 20, 0.25);
+}
+
+.wake-ring-3 {
+  width: 80px;
+  height: 80px;
+  animation: ringExpand 2.4s ease-out 0.6s forwards;
+  border-color: rgba(255, 100, 0, 0.18);
+}
+
+.wake-ring-4 {
+  width: 80px;
+  height: 80px;
+  animation: ringExpand 2.4s ease-out 0.85s forwards;
+  border-color: rgba(255, 80, 0, 0.12);
+}
+
+@keyframes ringExpand {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
+    border-width: 2px;
+  }
+  70% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: scale(12);
+    opacity: 0;
+    border-width: 0.5px;
+  }
+}
+
+/* ─── Center Logo + Text ─────────────────────────────────────────────────── */
+.jarvis-wake-center {
+  position: relative;
+  z-index: 510;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.wake-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Courier New", monospace;
+  font-size: 36px;
+  font-weight: bold;
+  color: #ffcc66;
+  border: 2px solid rgba(255, 170, 48, 0.6);
+  background: radial-gradient(circle at center, rgba(255, 140, 20, 0.15), transparent 70%);
+  box-shadow:
+    0 0 30px rgba(255, 140, 20, 0.4),
+    0 0 60px rgba(255, 100, 0, 0.2),
+    inset 0 0 20px rgba(255, 140, 20, 0.15);
+  text-shadow: 0 0 20px rgba(255, 170, 48, 1);
+  animation: logoPulse 1.2s ease-in-out infinite alternate;
+  opacity: 0;
+  animation: logoFadeIn 0.6s ease-out 0.2s forwards, logoPulse 1.2s ease-in-out 0.8s infinite alternate;
+}
+
+@keyframes logoFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes logoPulse {
+  from {
+    box-shadow:
+      0 0 30px rgba(255, 140, 20, 0.4),
+      0 0 60px rgba(255, 100, 0, 0.2);
+    border-color: rgba(255, 170, 48, 0.6);
+  }
+  to {
+    box-shadow:
+      0 0 50px rgba(255, 140, 20, 0.7),
+      0 0 100px rgba(255, 100, 0, 0.35);
+    border-color: rgba(255, 200, 100, 0.9);
+  }
+}
+
+.wake-label {
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  letter-spacing: 0.4em;
+  color: #ffcc66;
+  text-shadow: 0 0 12px rgba(255, 170, 48, 0.9);
+  opacity: 0;
+  animation: textSlideIn 0.5s ease-out 0.8s forwards;
+}
+
+.wake-subtext {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: rgba(255, 170, 48, 0.5);
+  text-shadow: 0 0 6px rgba(255, 170, 48, 0.4);
+  opacity: 0;
+  animation: textSlideIn 0.5s ease-out 1.1s forwards;
+}
+
+@keyframes textSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+/* ─── Horizontal Scan Bar ─────────────────────────────────────────────────── */
+.wake-scanbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 170, 48, 0.05) 20%,
+    rgba(255, 170, 48, 0.7) 50%,
+    rgba(255, 170, 48, 0.05) 80%,
+    transparent 100%
+  );
+  box-shadow: 0 0 15px rgba(255, 170, 48, 0.6);
+  animation: scanDown 2.0s ease-in-out 0.3s forwards;
+  opacity: 0;
+}
+
+@keyframes scanDown {
+  0% {
+    top: 0;
+    opacity: 0.8;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* ─── "ONLINE" flash on complete ──────────────────────────────────────────── */
+.jarvis-wake-overlay.online .wake-label {
+  color: #00ff88;
+  text-shadow: 0 0 20px rgba(0, 255, 136, 1);
+  animation: onlineFlash 0.4s ease-out forwards;
+}
+
+.jarvis-wake-overlay.online .wake-logo {
+  border-color: rgba(0, 255, 136, 0.8);
+  color: #00ff88;
+  box-shadow:
+    0 0 40px rgba(0, 255, 136, 0.5),
+    0 0 80px rgba(0, 255, 136, 0.25);
+  text-shadow: 0 0 20px rgba(0, 255, 136, 1);
+}
+
+.jarvis-wake-overlay.online .wake-subtext {
+  color: rgba(0, 255, 136, 0.7);
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.jarvis-wake-overlay.online .wake-ring {
+  border-color: rgba(0, 255, 136, 0.3) !important;
+}
+
+@keyframes onlineFlash {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+    text-shadow: 0 0 30px rgba(0, 255, 136, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
