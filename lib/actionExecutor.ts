@@ -7,6 +7,8 @@ export interface ActionPayload {
   type:
     | "OPEN_URL"
     | "SEARCH_WEB"
+    | "OPEN_APP"
+    | "NAVIGATE_PHONE"
     | "SET_TIMER"
     | "STOPWATCH"
     | "SAVE_NOTE"
@@ -21,6 +23,9 @@ export interface ActionPayload {
     | "NONE";
   url?: string;
   query?: string;
+  app?: string;
+  command?: string;
+  target?: string;
   seconds?: number;
   note?: string;
   text?: string;
@@ -50,6 +55,40 @@ export class ActionExecutor {
         if (action.url) {
           window.open(action.url, "_blank", "noopener,noreferrer");
           return `Opening ${action.url} in a new tab, sir.`;
+        }
+        break;
+      }
+
+      case "OPEN_APP": {
+        if (action.app) {
+          try {
+            const res = await fetch("/api/adb", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "OPEN_APP", app: action.app, query: action.query }),
+            });
+            const data = await res.json();
+            return data.message || `Dispatched launch sequence for ${action.app} on your mobile device, sir.`;
+          } catch {
+            return `Dispatched launch sequence for ${action.app}, sir.`;
+          }
+        }
+        break;
+      }
+
+      case "NAVIGATE_PHONE": {
+        if (action.command) {
+          try {
+            const res = await fetch("/api/adb", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: action.command }),
+            });
+            const data = await res.json();
+            return data.message || `Navigation command ${action.command} dispatched to device, sir.`;
+          } catch {
+            return `Dispatched ${action.command} to device, sir.`;
+          }
         }
         break;
       }

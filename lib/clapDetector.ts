@@ -1,10 +1,15 @@
 /**
  * Web Audio API Clap Detector for Ultron / Jarvis Wake-Up Trigger
+ * Enhanced with:
+ * - Disposal flag for React StrictMode async safety
+ * - Audio ducking / muting during system speech & sound playback
+ * - Startup grace period (ignores mic initialization pops)
+ * - Anti-echo transient verification
  */
 export interface ClapDetectorOptions {
   onClap: () => void;
-  threshold?: number; // Volume threshold 0-255 (default ~110)
-  cooldownMs?: number; // Minimum time between claps (default 600ms)
+  threshold?: number; // Volume threshold 0-255 (default ~125)
+  cooldownMs?: number; // Minimum time between claps (default 1200ms)
 }
 
 export class ClapDetector {
@@ -13,6 +18,9 @@ export class ClapDetector {
   private mediaStream: MediaStream | null = null;
   private animationFrameId = 0;
   private listening = false;
+  private isDisposed = false;
+  private isMuted = false;
+  private initTime = 0;
 
   private onClapCallback: () => void;
   private threshold: number;
@@ -21,36 +29,54 @@ export class ClapDetector {
 
   constructor(options: ClapDetectorOptions) {
     this.onClapCallback = options.onClap;
-    this.threshold = options.threshold ?? 110;
-    this.cooldownMs = options.cooldownMs ?? 600;
+    this.threshold = options.threshold ?? 125;
+    this.cooldownMs = options.cooldownMs ?? 1200;
   }
 
   public async start(): Promise<void> {
-    if (this.listening) return;
+    if (this.listening || this.isDisposed) return;
+    this.initTime = Date.now();
 
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: true,
-        noiseSuppression: false,
-        autoGainControl: false,
-      },
-    });
-    this.mediaStream = stream;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: false,
+        },
+      });
 
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    this.audioContext = new AudioContextClass();
-    const source = this.audioContext.createMediaStreamSource(stream);
-    this.analyser = this.audioContext.createAnalyser();
+      // If stopped while getUserMedia was pending, clean up immediately
+      if (this.isDisposed) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
 
-    this.analyser.fftSize = 512;
-    this.analyser.smoothingTimeConstant = 0.2;
-    source.connect(this.analyser);
+      this.mediaStream = stream;
 
-    this.listening = true;
-    this.analyze();
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      this.audioContext = new AudioContextClass();
+      const source = this.audioContext.createMediaStreamSource(stream);
+      this.analyser = this.audioContext.createAnalyser();
+
+      this.analyser.fftSize = 512;
+      this.analyser.smoothingTimeConstant = 0.15;
+      source.connect(this.analyser);
+
+      this.listening = true;
+      this.analyze();
+    } catch (err) {
+      this.listening = false;
+      // Mic access denied or not available
+    }
+  }
+
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
   }
 
   public stop(): void {
+    this.isDisposed = true;
     this.listening = false;
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
@@ -72,12 +98,24 @@ export class ClapDetector {
   }
 
   private analyze = (): void => {
-    if (!this.listening || !this.analyser) return;
+    if (!this.listening || !this.analyser || this.isDisposed) return;
+
+    // If muted (e.g. system is speaking or playing startup sound), skip analysis
+    if (this.isMuted) {
+      this.animationFrameId = requestAnimationFrame(this.analyze);
+      return;
+    }
+
+    const now = Date.now();
+    // Warmup period: ignore initial 2.5 seconds to suppress hardware power-on transients
+    if (now - this.initTime < 2500) {
+      this.animationFrameId = requestAnimationFrame(this.analyze);
+      return;
+    }
 
     const dataArray = new Uint8Array(this.analyser.frequencyBinCount);
     this.analyser.getByteFrequencyData(dataArray);
 
-    // Calculate maximum amplitude & average amplitude
     let max = 0;
     let sum = 0;
     for (let i = 0; i < dataArray.length; i++) {
@@ -87,11 +125,10 @@ export class ClapDetector {
     }
     const avg = sum / dataArray.length;
 
-    const now = Date.now();
-    // A clap is characterized by a sharp transient spike (high max amplitude relative to average background noise)
+    // A real clap is an abrupt transient spike significantly above the ambient floor
     if (
       max > this.threshold &&
-      max > avg * 2.8 &&
+      max > avg * 3.0 &&
       now - this.lastClapTime > this.cooldownMs
     ) {
       this.lastClapTime = now;

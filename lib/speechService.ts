@@ -1,11 +1,16 @@
 /**
- * Speech Recognition, Voice Synthesis & Sci-Fi Audio Cues for Jarvis UI
- * Fixed: callbacks are live-updated via ref so SpeechService is never recreated.
+ * Speech Recognition, Voice Synthesis & Sci-Fi Audio Cues for Jarvis / Ultron UI
+ * Includes:
+ * - One-time Startup sound player with completion callback
+ * - Wake chime & listening audio cues
+ * - Voice synthesis with turn-taking callback
+ * - Safe recognition lifecycle
  */
 
 export interface SpeechServiceCallbacks {
   onUserTranscript: (text: string, isFinal: boolean) => void;
   onJarvisSpeak: (text: string) => void;
+  onJarvisSpeakEnd?: () => void;
   onStateChange: (state: "idle" | "listening" | "processing" | "speaking") => void;
   onError?: (err: string) => void;
 }
@@ -13,12 +18,12 @@ export interface SpeechServiceCallbacks {
 export class SpeechService {
   private recognition: any = null;
   private synthesis: SpeechSynthesis | null = null;
-  // Store callbacks as a mutable ref so they can be updated without recreating this class
   private callbacks: SpeechServiceCallbacks;
   private isListening = false;
   private pendingFinal = ""; // deduplicate — only emit once per session
   private startupAudio: HTMLAudioElement | null = null;
   private synthToneTimeouts: NodeJS.Timeout[] = [];
+  private isAudioPlaying = false;
 
   constructor(callbacks: SpeechServiceCallbacks) {
     this.callbacks = callbacks;
@@ -31,16 +36,16 @@ export class SpeechService {
 
       if (SpeechRecognitionClass) {
         this.recognition = new SpeechRecognitionClass();
-        this.recognition.continuous = false; // one utterance per session
+        this.recognition.continuous = false; // one utterance per turn for natural turn-taking
         this.recognition.interimResults = true;
         this.recognition.lang = "en-US";
         this.recognition.maxAlternatives = 1;
 
         this.recognition.onstart = () => {
           this.isListening = true;
-          this.pendingFinal = ""; // reset dedup buffer
+          this.pendingFinal = "";
           this.callbacks.onStateChange("listening");
-          this.playAudioBeep(880, 0.1, "sine");
+          this.playAudioBeep(880, 0.08, "sine");
         };
 
         this.recognition.onresult = (event: any) => {
@@ -49,7 +54,6 @@ export class SpeechService {
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             const transcript = event.results[i][0].transcript.trim();
             if (event.results[i].isFinal) {
-              // Only emit the final result if it hasn't been emitted yet this session
               if (transcript && transcript !== this.pendingFinal) {
                 this.pendingFinal = transcript;
                 this.callbacks.onUserTranscript(transcript, true);
@@ -59,30 +63,26 @@ export class SpeechService {
             }
           }
 
-          // Only emit interim if no final pending
           if (interim && !this.pendingFinal) {
             this.callbacks.onUserTranscript(interim, false);
           }
         };
 
         this.recognition.onerror = (event: any) => {
-          console.warn("Speech recognition error:", event.error);
           this.isListening = false;
           this.callbacks.onStateChange("idle");
           if (event.error !== "no-speech" && event.error !== "aborted") {
-            this.callbacks.onError?.(`Speech Error: ${event.error}`);
+            this.callbacks.onError?.(`Voice recognition note: ${event.error}`);
           }
         };
 
         this.recognition.onend = () => {
           this.isListening = false;
-          // Don't call onStateChange here — avoids double idle when speak() already cancelled it
         };
       }
     }
   }
 
-  /** Update callbacks without recreating the service — prevents double-firing */
   public updateCallbacks(callbacks: SpeechServiceCallbacks): void {
     this.callbacks = callbacks;
   }
@@ -92,26 +92,33 @@ export class SpeechService {
       this.callbacks.onError?.("Speech recognition not supported in this browser.");
       return;
     }
-    if (this.isListening) return; // guard against double start
+    if (this.isListening) return;
     this.stopSpeaking();
     this.pendingFinal = "";
     try {
       this.recognition.start();
-    } catch (e) {
-      // Already started — ignore
+    } catch {
+      // Already running or starting
     }
   }
 
   public stopListening(): void {
     if (this.recognition && this.isListening) {
-      this.recognition.abort();
+      try {
+        this.recognition.abort();
+      } catch {
+        // ignore
+      }
       this.isListening = false;
       this.callbacks.onStateChange("idle");
     }
   }
 
   public speak(text: string): void {
-    if (!this.synthesis) return;
+    if (!this.synthesis) {
+      this.callbacks.onJarvisSpeakEnd?.();
+      return;
+    }
 
     this.stopSpeaking();
     this.stopListening();
@@ -121,26 +128,43 @@ export class SpeechService {
     this.playAudioBeep(520, 0.08, "triangle");
 
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.02;
-    utterance.pitch = 0.9;
+    utterance.rate = 1.0;
+    utterance.pitch = 0.90;
 
     const voices = this.synthesis.getVoices();
+    // Prioritize sophisticated British English voices (Paul Bettany / JARVIS style)
     const jarvisVoice =
       voices.find((v) =>
+        (v.lang === "en-GB" || v.lang === "en_GB") &&
+        (v.name.includes("George") ||
+         v.name.includes("Daniel") ||
+         v.name.includes("Oliver") ||
+         v.name.includes("Arthur") ||
+         v.name.includes("UK English Male") ||
+         v.name.includes("Male") ||
+         v.name.includes("Natural"))
+      ) ||
+      voices.find((v) => (v.lang === "en-GB" || v.lang === "en_GB")) ||
+      voices.find((v) =>
         v.lang.startsWith("en") &&
-        (v.name.includes("Daniel") || v.name.includes("Google UK English Male") ||
-         v.name.includes("Male") || v.name.includes("Natural"))
-      ) || voices.find((v) => v.lang.startsWith("en"));
+        (v.name.includes("Daniel") ||
+         v.name.includes("Google UK English Male") ||
+         v.name.includes("Male") ||
+         v.name.includes("Natural"))
+      ) ||
+      voices.find((v) => v.lang.startsWith("en"));
 
     if (jarvisVoice) utterance.voice = jarvisVoice;
 
     utterance.onend = () => {
       this.callbacks.onStateChange("idle");
       this.playAudioBeep(440, 0.05, "sine");
+      this.callbacks.onJarvisSpeakEnd?.();
     };
 
     utterance.onerror = () => {
       this.callbacks.onStateChange("idle");
+      this.callbacks.onJarvisSpeakEnd?.();
     };
 
     this.synthesis.speak(utterance);
@@ -168,12 +192,16 @@ export class SpeechService {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + duration);
-    } catch (e) {
-      // ignore
+    } catch {
+      // AudioContext policy
     }
   }
 
-  public playJarvisStartupSound(): void {
+  /**
+   * One-time Startup sound player for the initial application boot.
+   */
+  public playJarvisStartupSound(onComplete?: () => void): void {
+    this.isAudioPlaying = true;
     try {
       if (this.startupAudio) {
         this.startupAudio.pause();
@@ -181,21 +209,65 @@ export class SpeechService {
       }
       this.startupAudio = new Audio("/jarvis-startup.mp3");
       this.startupAudio.volume = 0.85;
+
+      let called = false;
+      const finish = () => {
+        if (!called) {
+          called = true;
+          this.isAudioPlaying = false;
+          onComplete?.();
+        }
+      };
+
+      this.startupAudio.onended = finish;
+      this.startupAudio.onerror = () => {
+        this.playJarvisSynthTone(finish);
+      };
+
       this.startupAudio.play().catch(() => {
-        // Fallback if browser hasn't had user interaction yet
-        this.playJarvisSynthTone();
+        // Fallback tone if browser interaction blocked full MP3 autoplay
+        this.playJarvisSynthTone(finish);
       });
-    } catch (e) {
-      this.playJarvisSynthTone();
+    } catch {
+      this.playJarvisSynthTone(onComplete);
     }
   }
 
+  /** Futuristic wake chime for wake-up triggers after initial boot */
+  public playWakeChime(): void {
+    this.playAudioBeep(587.33, 0.12, "sine"); // D5
+    setTimeout(() => {
+      this.playAudioBeep(880, 0.18, "sine"); // A5
+    }, 100);
+  }
+
+  /** Gentle descending chime for standby */
+  public playStandbyChime(): void {
+    this.playAudioBeep(659.25, 0.1, "sine"); // E5
+    setTimeout(() => {
+      this.playAudioBeep(440, 0.15, "sine"); // A4
+    }, 90);
+  }
+
+  public getIsAudioPlaying(): boolean {
+    return this.isAudioPlaying;
+  }
+
   /** Synthetic Jarvis startup chord when MP3 can't play */
-  private playJarvisSynthTone(): void {
+  private playJarvisSynthTone(onComplete?: () => void): void {
     this.synthToneTimeouts.forEach(clearTimeout);
     this.synthToneTimeouts = [];
-    [440, 550, 660, 880].forEach((f, i) => {
-      const timeout = setTimeout(() => this.playAudioBeep(f, 0.3, "sawtooth"), i * 80);
+    const freqs = [440, 554.37, 659.25, 880];
+    freqs.forEach((f, i) => {
+      const timeout = setTimeout(() => {
+        this.playAudioBeep(f, 0.28, "sawtooth");
+        if (i === freqs.length - 1) {
+          setTimeout(() => {
+            this.isAudioPlaying = false;
+            onComplete?.();
+          }, 350);
+        }
+      }, i * 85);
       this.synthToneTimeouts.push(timeout);
     });
   }

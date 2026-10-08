@@ -1,3 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;800;900&family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --stark-amber: #ffaa30;
+  --stark-amber-glow: rgba(255, 170, 48, 0.6);
+  --stark-amber-soft: rgba(255, 170, 48, 0.15);
+  --stark-amber-deep: #ff8c14;
+  --stark-gold: #ffcc66;
+  --stark-cyan: #00f0ff;
+  --stark-cyan-bright: #66ffcc;
+  --stark-emerald: #00ff88;
+  --stark-ruby: #ff3366;
+  --stark-obsidian: rgba(10, 6, 2, 0.85);
+  --stark-panel-bg: rgba(12, 7, 3, 0.9);
+  --stark-border: rgba(255, 170, 48, 0.45);
+  --stark-border-bright: rgba(255, 204, 102, 0.85);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -12,9 +30,12 @@ body {
 body {
   background: #000;
   overflow: hidden;
-  font-family: "Courier New", monospace;
+  font-family: 'Rajdhani', -apple-system, sans-serif;
+  color: var(--stark-gold);
+  -webkit-font-smoothing: antialiased;
 }
 
+/* ─── 3D ORB CONTAINER (UNTOUCHED) ─── */
 .orb-root {
   position: fixed;
   inset: 0;
@@ -35,7 +56,7 @@ body {
   inset: 0;
   pointer-events: none;
   z-index: 10;
-  opacity: 0.06;
+  opacity: 0.05;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 150px;
   mix-blend-mode: screen;
@@ -51,10 +72,10 @@ body {
     to bottom,
     transparent 0px,
     transparent 2px,
-    rgba(0, 0, 0, 0.15) 2px,
-    rgba(0, 0, 0, 0.15) 4px
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 4px
   );
-  opacity: 0.3;
+  opacity: 0.35;
 }
 
 /* Vignette */
@@ -65,182 +86,307 @@ body {
   z-index: 9;
   background: radial-gradient(
     ellipse at center,
-    transparent 40%,
-    rgba(0, 0, 0, 0.7) 100%
+    transparent 45%,
+    rgba(0, 0, 0, 0.8) 100%
   );
 }
 
-/* ——— HUD ——— */
+/* ─── HUD BASE ─── */
 .hud {
   position: fixed;
   z-index: 20;
-  color: #ffaa30;
-  font-family: "Courier New", monospace;
+  color: var(--stark-amber);
   user-select: none;
 }
 
-.hud-controls {
-  bottom: 24px;
-  right: 24px;
+/* ─── TOP LEFT HOLOGRAPHIC BRANDING & TELEMETRY ─── */
+.hud-title-matrix {
+  top: 24px;
+  left: 28px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  align-items: flex-end;
-}
-
-.hud-btn {
-  min-width: 44px;
-  height: 44px;
-  padding: 0 12px;
-  background: rgba(20, 10, 0, 0.55);
-  border: 1px solid rgba(255, 170, 48, 0.45);
-  border-radius: 4px;
-  color: #ffaa30;
-  font-family: "Courier New", monospace;
-  font-size: 15px;
-  font-weight: bold;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  backdrop-filter: blur(2px);
-  text-shadow: 0 0 6px rgba(255, 170, 48, 0.7);
-  box-shadow: 0 0 12px rgba(255, 140, 20, 0.12) inset;
-  transition:
-    background 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.hud-btn:hover {
-  background: rgba(60, 30, 0, 0.7);
-  border-color: rgba(255, 200, 100, 0.9);
-  box-shadow:
-    0 0 14px rgba(255, 150, 30, 0.35),
-    0 0 12px rgba(255, 140, 20, 0.2) inset;
-}
-
-.hud-btn:active {
-  background: rgba(90, 45, 0, 0.8);
-}
-
-.hud-btn[aria-pressed="true"] {
-  background: rgba(120, 60, 0, 0.6);
-  border-color: #ffcc66;
-  color: #ffcc66;
-}
-
-.hud-row {
-  display: flex;
-  gap: 8px;
-}
-
-.hud-hint {
-  bottom: 24px;
-  left: 24px;
-  font-size: 11px;
-  line-height: 1.7;
-  letter-spacing: 0.1em;
-  opacity: 0.55;
-  text-shadow: 0 0 8px rgba(255, 170, 48, 0.6);
+  gap: 3px;
   pointer-events: none;
+  z-index: 25;
 }
 
-.hud-hint .key {
-  display: inline-block;
-  padding: 0 4px;
+.hud-title-prefix {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: rgba(255, 170, 48, 0.7);
+  text-shadow: 0 0 8px rgba(255, 170, 48, 0.6);
+}
+
+.hud-title-main {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hud-title-glow {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.32em;
+  color: #ffffff;
+  text-shadow:
+    0 0 10px rgba(255, 170, 48, 0.9),
+    0 0 25px rgba(255, 140, 20, 0.6);
+}
+
+.hud-title-version {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 1px 6px;
+  background: rgba(255, 170, 48, 0.15);
   border: 1px solid rgba(255, 170, 48, 0.5);
   border-radius: 3px;
-  margin-right: 4px;
-  font-size: 10px;
+  color: var(--stark-gold);
+  letter-spacing: 0.1em;
 }
 
-.hud-title {
+.hud-title-sub {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  color: rgba(255, 204, 102, 0.65);
+}
+
+.hud-title-line {
+  position: relative;
+  width: 220px;
+  height: 2px;
+  margin-top: 4px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 170, 48, 0.9),
+    rgba(255, 140, 20, 0.4) 60%,
+    transparent
+  );
+  overflow: hidden;
+}
+
+.hud-title-line::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40px;
+  width: 40px;
+  height: 100%;
+  background: #ffffff;
+  box-shadow: 0 0 8px #ffffff;
+  animation: lineSweep 3s infinite ease-in-out;
+}
+
+@keyframes lineSweep {
+  0% { left: -40px; }
+  60%, 100% { left: 240px; }
+}
+
+/* ─── TOP RIGHT HOLOGRAPHIC TELEMETRY DECK ─── */
+.hud-telemetry-deck {
+  position: fixed;
   top: 24px;
-  left: 24px;
-  font-size: 13px;
-  letter-spacing: 0.35em;
-  opacity: 0.7;
-  text-shadow: 0 0 10px rgba(255, 170, 48, 0.8);
+  right: 28px;
+  z-index: 28;
+  width: 250px;
+  background: linear-gradient(135deg, rgba(16, 9, 3, 0.9) 0%, rgba(8, 4, 1, 0.95) 100%);
+  border: 1px solid rgba(255, 170, 48, 0.45);
+  border-radius: 10px;
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 0 25px rgba(255, 140, 20, 0.16),
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    inset 0 0 14px rgba(255, 170, 48, 0.06);
+  user-select: none;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.hud-telemetry-deck:hover {
+  border-color: rgba(255, 204, 102, 0.7);
+  box-shadow:
+    0 0 30px rgba(255, 150, 30, 0.25),
+    0 12px 35px rgba(0, 0, 0, 0.85),
+    inset 0 0 16px rgba(255, 170, 48, 0.1);
+}
+
+/* Holographic Corner Ticks */
+.telemetry-bracket {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-color: rgba(255, 204, 102, 0.85);
+  border-style: solid;
   pointer-events: none;
 }
 
-.hud-title::after {
-  content: "";
-  display: block;
-  margin-top: 6px;
-  width: 120px;
-  height: 1px;
-  background: linear-gradient(to right, rgba(255, 170, 48, 0.8), transparent);
-}
+.telemetry-bracket.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.telemetry-bracket.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.telemetry-bracket.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.telemetry-bracket.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
 
-.hud-error {
-  font-size: 11px;
-  letter-spacing: 0.15em;
-  color: #ff5533;
-  text-shadow: 0 0 8px rgba(255, 60, 30, 0.7);
-}
-
-/* ——— Camera preview panel ——— */
-.camera-panel {
-  position: relative;
-  width: 208px;
-  height: 156px;
-  display: none;
-  border: 1px solid rgba(255, 170, 48, 0.45);
-  border-radius: 4px;
-  overflow: hidden;
-  background: #0a0500;
-  box-shadow: 0 0 16px rgba(255, 140, 20, 0.15);
-}
-
-.camera-panel.visible {
-  display: block;
-}
-
-.camera-video {
+.telemetry-shimmer {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scaleX(-1); /* mirror so it behaves like a mirror */
-  filter: sepia(1) hue-rotate(-15deg) saturate(2.2) brightness(0.75)
-    contrast(1.15);
-  opacity: 0.85;
-}
-
-.camera-overlay {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.camera-status {
-  position: absolute;
-  bottom: 0;
+  top: 0;
   left: 0;
   right: 0;
-  padding: 3px 6px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 204, 102, 0.8) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+/* Header */
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid rgba(255, 170, 48, 0.25);
+  background: rgba(25, 13, 4, 0.6);
+}
+
+.telemetry-header-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--stark-gold);
+}
+
+.telemetry-pulse-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--stark-emerald);
+  box-shadow: 0 0 6px var(--stark-emerald);
+  animation: hudPulseDot 1.2s infinite alternate;
+}
+
+.telemetry-id {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 170, 48, 0.6);
+}
+
+/* Grid & Rows */
+.telemetry-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.telemetry-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid rgba(255, 170, 48, 0.1);
+  transition: all 0.15s ease;
+}
+
+.telemetry-row:last-child {
+  border-bottom: none;
+}
+
+.telemetry-row.interactive {
+  cursor: pointer;
+}
+
+.telemetry-row.interactive:hover {
+  background: rgba(70, 36, 10, 0.5);
+}
+
+.telemetry-row.interactive:hover .telemetry-row-val {
+  color: #fff;
+  text-shadow: 0 0 6px rgba(255, 204, 102, 0.8);
+}
+
+.telemetry-row-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-family: 'Share Tech Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.15em;
-  color: #ffcc66;
-  background: rgba(10, 5, 0, 0.65);
-  text-shadow: 0 0 6px rgba(255, 170, 48, 0.8);
+  color: rgba(255, 204, 102, 0.75);
 }
 
-@media (max-width: 600px) {
-  .hud-hint {
-    display: none;
-  }
+.telemetry-row-val {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--stark-amber);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* ——— HUD Subtitles & Agent Telemetry Overlay ——— */
+.telemetry-row.active .telemetry-row-val {
+  color: #ffe6a0;
+}
+
+.telemetry-row.voice-row.listening {
+  background: rgba(0, 240, 255, 0.08);
+}
+
+.telemetry-row.voice-row.listening .telemetry-row-val {
+  color: var(--stark-cyan-bright);
+  text-shadow: 0 0 8px var(--stark-cyan);
+}
+
+.toggle-val {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toggle-indicator {
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.status-pip {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 170, 48, 0.4);
+  flex-shrink: 0;
+}
+
+.status-pip.online {
+  background: var(--stark-emerald);
+  box-shadow: 0 0 6px var(--stark-emerald);
+}
+
+.status-pip.pulse-cyan {
+  background: var(--stark-cyan);
+  box-shadow: 0 0 8px var(--stark-cyan);
+  animation: hudPulseDot 0.8s infinite alternate;
+}
+
+.status-pip.off {
+  background: rgba(255, 80, 80, 0.6);
+}
+
+@keyframes hudPulseDot {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+/* ─── HUD SUBTITLES (VOICE HUD) ─── */
 .hud-subtitles {
   position: fixed;
-  bottom: 80px;
+  bottom: 124px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 25;
+  z-index: 28;
   width: 90%;
   max-width: 680px;
   display: flex;
@@ -250,76 +396,1311 @@ body {
 }
 
 .subtitle-box {
-  background: rgba(12, 6, 2, 0.75);
-  border: 1px solid rgba(255, 170, 48, 0.5);
-  border-radius: 6px;
-  padding: 10px 18px;
-  color: #ffcc66;
-  font-family: "Courier New", monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  letter-spacing: 0.08em;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 0 20px rgba(255, 140, 20, 0.2);
-  text-shadow: 0 0 8px rgba(255, 170, 48, 0.8);
-  animation: hudPulse 3s infinite ease-in-out;
+  background: linear-gradient(135deg, rgba(16, 9, 3, 0.88) 0%, rgba(8, 4, 1, 0.94) 100%);
+  border: 1px solid rgba(255, 170, 48, 0.55);
+  border-radius: 8px;
+  padding: 12px 22px;
+  color: #fff;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    0 0 25px rgba(255, 140, 20, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    inset 0 0 15px rgba(255, 170, 48, 0.1);
   text-align: center;
+  animation: hudPulse 3s infinite ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.subtitle-box::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(255, 200, 100, 0.8), transparent);
+}
+
+.subtitle-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .subtitle-speaker {
-  font-size: 10px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
   letter-spacing: 0.25em;
-  color: #ffaa30;
-  margin-bottom: 4px;
-  opacity: 0.85;
+  font-weight: 700;
 }
 
 .subtitle-speaker.user {
-  color: #66ccff;
-  text-shadow: 0 0 8px rgba(102, 204, 255, 0.8);
+  color: var(--stark-cyan);
+  text-shadow: 0 0 8px rgba(0, 240, 255, 0.8);
 }
 
-.hud-top-right {
-  position: fixed;
-  top: 24px;
-  right: 24px;
-  z-index: 20;
+.subtitle-speaker.jarvis,
+.subtitle-speaker.ultron {
+  color: var(--stark-amber);
+  text-shadow: 0 0 8px rgba(255, 170, 48, 0.8);
+}
+
+.subtitle-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--stark-amber);
+  box-shadow: 0 0 6px var(--stark-amber);
+  animation: hudPulseDot 1.2s infinite alternate;
+}
+
+.subtitle-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: 0.06em;
+  color: #ffecc2;
+  text-shadow: 0 0 8px rgba(255, 170, 48, 0.7);
+}
+
+/* ─── TACTICAL KEYBOARD HINTS (BOTTOM LEFT) ─── */
+.hud-hint {
+  bottom: 24px;
+  left: 28px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  align-items: flex-end;
+  pointer-events: none;
+  z-index: 22;
 }
 
-.hud-badge {
+.hud-hint-title {
+  font-family: 'Share Tech Mono', monospace;
   font-size: 10px;
-  letter-spacing: 0.18em;
-  padding: 4px 8px;
-  background: rgba(20, 10, 0, 0.6);
-  border: 1px solid rgba(255, 170, 48, 0.35);
-  border-radius: 3px;
-  color: #ffaa30;
-  text-shadow: 0 0 6px rgba(255, 170, 48, 0.7);
+  letter-spacing: 0.22em;
+  color: rgba(255, 170, 48, 0.65);
 }
 
-.hud-badge.active {
-  background: rgba(80, 40, 0, 0.6);
-  border-color: #ffcc66;
-  color: #ffcc66;
+.hud-hint-keys {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.key-chip {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 204, 102, 0.85);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hud-hint .key {
+  display: inline-block;
+  padding: 1px 5px;
+  background: rgba(30, 15, 5, 0.8);
+  border: 1px solid rgba(255, 170, 48, 0.5);
+  border-radius: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: #fff;
+  box-shadow: 0 0 6px rgba(255, 170, 48, 0.25);
+}
+
+.hud-hint-phrases {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 170, 48, 0.65);
+}
+
+.key-say {
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--stark-amber);
+  margin-right: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE STATE-OF-THE-ART COMMAND DECK (FUNCTIONS BAR)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.hud-command-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.hud-command-container > * {
+  pointer-events: auto;
+}
+
+/* Floating Deck Base */
+.hud-command-deck {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 10, 4, 0.88) 0%,
+    rgba(8, 4, 1, 0.94) 100%
+  );
+  border: 1px solid rgba(255, 170, 48, 0.45);
+  border-radius: 16px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 35px rgba(255, 140, 20, 0.18),
+    0 12px 35px rgba(0, 0, 0, 0.85),
+    inset 0 0 15px rgba(255, 170, 48, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* Holographic Corner Ticks */
+.deck-corner-bracket {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-color: rgba(255, 204, 102, 0.85);
+  border-style: solid;
+  pointer-events: none;
+}
+
+.corner-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; border-top-left-radius: 6px; }
+.corner-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; border-top-right-radius: 6px; }
+.corner-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; border-bottom-left-radius: 6px; }
+.corner-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; border-bottom-right-radius: 6px; }
+
+.deck-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 200, 100, 0.7) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Deck Sub-Sections */
+.deck-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.deck-section-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: rgba(255, 170, 48, 0.6);
+  padding-left: 4px;
+}
+
+.deck-section-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Individual Holographic Deck Buttons */
+.deck-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 14px;
+  background: rgba(28, 14, 4, 0.65);
+  border: 1px solid rgba(255, 170, 48, 0.35);
+  border-radius: 10px;
+  color: var(--stark-gold);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 140, 20, 0.08);
+  user-select: none;
+  overflow: hidden;
+}
+
+.deck-btn:hover {
+  background: rgba(65, 32, 8, 0.8);
+  border-color: rgba(255, 204, 102, 0.85);
+  box-shadow:
+    0 0 16px rgba(255, 150, 30, 0.35),
+    0 4px 12px rgba(0, 0, 0, 0.6),
+    inset 0 0 12px rgba(255, 170, 48, 0.18);
+  transform: translateY(-2px);
+}
+
+.deck-btn:active {
+  transform: translateY(0) scale(0.97);
+  background: rgba(90, 45, 10, 0.9);
+}
+
+.deck-btn.active {
+  background: rgba(75, 36, 8, 0.85);
+  border-color: #ffd480;
+  box-shadow:
+    0 0 18px rgba(255, 170, 48, 0.4),
+    inset 0 0 12px rgba(255, 170, 48, 0.2);
+}
+
+.deck-btn.active .deck-btn-title {
+  color: #ffffff;
+  text-shadow: 0 0 8px rgba(255, 200, 100, 0.9);
+}
+
+.deck-btn.linked {
+  border-color: var(--stark-emerald);
+}
+
+.deck-btn-icon {
+  font-size: 16px;
+  line-height: 1;
+  filter: drop-shadow(0 0 4px rgba(255, 170, 48, 0.6));
+}
+
+.deck-btn-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.deck-btn-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--stark-gold);
+  line-height: 1.2;
+}
+
+.deck-btn-shortcut {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: rgba(255, 170, 48, 0.7);
+  line-height: 1;
+}
+
+.deck-btn-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 170, 48, 0.4);
+  margin-left: 2px;
+}
+
+.deck-btn-dot.active {
+  background: var(--stark-emerald);
+  box-shadow: 0 0 8px var(--stark-emerald);
+}
+
+/* ─── ARC-REACTOR VOICE CORE BUTTON (CENTERPIECE) ─── */
+.deck-core-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.deck-core-btn {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center, rgba(40, 20, 5, 0.9) 0%, rgba(12, 6, 2, 0.98) 80%);
+  border: 2px solid rgba(255, 170, 48, 0.65);
+  color: var(--stark-gold);
+  cursor: pointer;
+  outline: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 25px rgba(255, 140, 20, 0.3),
+    0 6px 18px rgba(0, 0, 0, 0.8),
+    inset 0 0 16px rgba(255, 170, 48, 0.25);
+  transition: all 0.25s ease;
+  user-select: none;
+}
+
+.deck-core-btn:hover {
+  transform: scale(1.06);
+  border-color: #ffe082;
+  box-shadow:
+    0 0 35px rgba(255, 160, 40, 0.55),
+    0 8px 24px rgba(0, 0, 0, 0.9),
+    inset 0 0 22px rgba(255, 170, 48, 0.4);
+}
+
+.deck-core-btn:active {
+  transform: scale(0.98);
+}
+
+/* Rotating Reactor Rings */
+.core-reactor-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.core-reactor-ring.outer {
+  inset: 4px;
+  border: 1px dashed rgba(255, 170, 48, 0.45);
+  animation: reactorSpin 16s linear infinite;
+}
+
+.core-reactor-ring.inner {
+  inset: 10px;
+  border: 1px dotted rgba(255, 204, 102, 0.35);
+  animation: reactorSpinRev 10s linear infinite;
+}
+
+@keyframes reactorSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes reactorSpinRev {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.core-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animated Equalizer Soundwaves */
+.core-soundwave {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+  margin-bottom: 2px;
+}
+
+.sound-bar {
+  width: 2.5px;
+  background: var(--stark-gold);
+  border-radius: 1px;
+  box-shadow: 0 0 4px var(--stark-amber);
+  transition: height 0.15s ease;
+}
+
+.sound-bar.b1 { height: 6px; }
+.sound-bar.b2 { height: 10px; }
+.sound-bar.b3 { height: 14px; }
+.sound-bar.b4 { height: 9px; }
+.sound-bar.b5 { height: 5px; }
+
+.core-status-text {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: #fff;
+  text-shadow: 0 0 6px var(--stark-amber);
+  line-height: 1;
+}
+
+.core-subtext {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: rgba(255, 204, 102, 0.7);
+  margin-top: 2px;
+}
+
+/* Voice Active States: Listening, Speaking, Processing */
+.deck-core-btn.listening {
+  border-color: var(--stark-cyan) !important;
+  box-shadow:
+    0 0 35px rgba(0, 240, 255, 0.6),
+    0 0 15px rgba(0, 240, 255, 0.4) inset !important;
+  animation: corePulseCyan 1.2s infinite ease-in-out;
+}
+
+.deck-core-btn.listening .sound-bar {
+  background: var(--stark-cyan) !important;
+  box-shadow: 0 0 6px var(--stark-cyan) !important;
+  animation: eqDance 0.6s infinite alternate ease-in-out;
+}
+
+.deck-core-btn.listening .sound-bar.b1 { animation-delay: 0.1s; }
+.deck-core-btn.listening .sound-bar.b2 { animation-delay: 0.3s; }
+.deck-core-btn.listening .sound-bar.b3 { animation-delay: 0.0s; }
+.deck-core-btn.listening .sound-bar.b4 { animation-delay: 0.4s; }
+.deck-core-btn.listening .sound-bar.b5 { animation-delay: 0.2s; }
+
+.deck-core-btn.listening .core-status-text {
+  color: var(--stark-cyan-bright) !important;
+  text-shadow: 0 0 8px var(--stark-cyan) !important;
+}
+
+.deck-core-btn.speaking {
+  border-color: var(--stark-gold) !important;
+  box-shadow: 0 0 35px rgba(255, 170, 48, 0.6) !important;
+}
+
+.deck-core-btn.speaking .sound-bar {
+  animation: eqDance 0.5s infinite alternate ease-in-out;
+}
+
+.deck-core-btn.processing {
+  border-color: #bb86fc !important;
+  box-shadow: 0 0 30px rgba(187, 134, 252, 0.5) !important;
+}
+
+@keyframes corePulseCyan {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes eqDance {
+  0% { height: 4px; }
+  100% { height: 16px; }
+}
+
+/* ─── OPTICS VIEWPORT MICRO-CLUSTER ─── */
+.deck-micro-cluster {
+  display: flex;
+  align-items: center;
+  background: rgba(20, 10, 3, 0.65);
+  border: 1px solid rgba(255, 170, 48, 0.35);
+  border-radius: 10px;
+  overflow: hidden;
+  height: 48px;
+}
+
+.deck-micro-btn {
+  height: 100%;
+  padding: 0 12px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid rgba(255, 170, 48, 0.25);
+  color: var(--stark-gold);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.deck-micro-btn:last-child {
+  border-right: none;
+}
+
+.deck-micro-btn:hover {
+  background: rgba(75, 38, 8, 0.7);
+  color: #fff;
+  text-shadow: 0 0 8px var(--stark-amber);
+}
+
+.deck-micro-btn:active {
+  background: rgba(100, 50, 10, 0.85);
+}
+
+.deck-micro-btn.reset-btn {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  padding: 0 10px;
+}
+
+/* ─── HUD DECK ERROR ─── */
+.hud-deck-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(40, 10, 10, 0.85);
+  border: 1px solid var(--stark-ruby);
+  border-radius: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #ff99aa;
+  text-shadow: 0 0 8px rgba(255, 51, 102, 0.7);
+  box-shadow: 0 0 16px rgba(255, 51, 102, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CAMERA HUD VISOR PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+.camera-panel {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  right: 0;
+  width: 220px;
+  height: 165px;
+  display: none;
+  background: #080401;
+  border: 1px solid rgba(255, 170, 48, 0.6);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow:
+    0 0 25px rgba(255, 140, 20, 0.25),
+    0 10px 30px rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.camera-panel.visible {
+  display: block;
+  animation: panelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panelSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.camera-visor-bracket {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(255, 200, 100, 0.9);
+  border-style: solid;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.visor-tl { top: 4px; left: 4px; border-width: 2px 0 0 2px; }
+.visor-tr { top: 4px; right: 4px; border-width: 2px 2px 0 0; }
+.visor-bl { bottom: 26px; left: 4px; border-width: 0 0 2px 2px; }
+.visor-br { bottom: 26px; right: 4px; border-width: 0 2px 2px 0; }
+
+.camera-scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, rgba(255, 204, 102, 0.9), transparent);
+  box-shadow: 0 0 8px rgba(255, 170, 48, 0.8);
+  z-index: 4;
+  pointer-events: none;
+  animation: scanSweeper 2.5s infinite linear;
+}
+
+@keyframes scanSweeper {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+.camera-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  border: 1px dashed rgba(255, 170, 48, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.camera-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+  filter: sepia(0.9) hue-rotate(-15deg) saturate(2.4) brightness(0.8) contrast(1.15);
+  opacity: 0.9;
+}
+
+.camera-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+}
+
+.camera-status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #fff;
+  background: rgba(14, 7, 2, 0.85);
+  border-top: 1px solid rgba(255, 170, 48, 0.4);
+  z-index: 6;
+  text-shadow: 0 0 6px var(--stark-amber);
+}
+
+.camera-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--stark-emerald);
+  box-shadow: 0 0 6px var(--stark-emerald);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANDROID ADB MATRIX PANEL
+   ═══════════════════════════════════════════════════════════════════════════ */
+.android-panel {
+  position: absolute;
+  bottom: calc(100% + 14px);
+  left: 0;
+  width: 330px;
+  background: linear-gradient(180deg, rgba(16, 9, 3, 0.92) 0%, rgba(8, 4, 1, 0.96) 100%);
+  border: 1px solid rgba(255, 170, 48, 0.55);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  backdrop-filter: blur(16px);
+  box-shadow:
+    0 0 30px rgba(255, 140, 20, 0.22),
+    0 12px 35px rgba(0, 0, 0, 0.85);
+  animation: panelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 10;
+}
+
+.android-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 170, 48, 0.3);
+  padding-bottom: 8px;
+}
+
+.android-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--stark-gold);
+  text-shadow: 0 0 8px rgba(255, 170, 48, 0.6);
+}
+
+.android-panel-title .tech-bracket {
+  color: var(--stark-amber);
+}
+
+.close-panel-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 170, 48, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: all 0.15s ease;
+}
+
+.close-panel-btn:hover {
+  color: #fff;
+  text-shadow: 0 0 8px #fff;
+}
+
+.android-device-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.android-device-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(30, 16, 5, 0.6);
+  border: 1px solid rgba(255, 170, 48, 0.3);
+  border-radius: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--stark-gold);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.android-device-item:hover,
+.android-device-item.selected {
+  background: rgba(70, 36, 10, 0.8);
+  border-color: rgba(255, 204, 102, 0.85);
   box-shadow: 0 0 10px rgba(255, 170, 48, 0.3);
 }
 
-.hud-badge.listening {
-  border-color: #66ffcc;
-  color: #66ffcc;
-  text-shadow: 0 0 8px rgba(102, 255, 204, 0.9);
+.device-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--stark-emerald);
+  box-shadow: 0 0 6px var(--stark-emerald);
+  margin-right: 6px;
 }
 
+.device-tag {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 2px 5px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 3px;
+  color: var(--stark-emerald);
+}
+
+.android-no-devices {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255, 170, 48, 0.6);
+  padding: 6px;
+  line-height: 1.4;
+  text-align: center;
+  background: rgba(25, 12, 4, 0.5);
+  border: 1px dashed rgba(255, 170, 48, 0.25);
+  border-radius: 6px;
+}
+
+.android-input-row {
+  display: flex;
+  gap: 6px;
+}
+
+.android-input {
+  flex: 1;
+  background: rgba(22, 11, 4, 0.8);
+  border: 1px solid rgba(255, 170, 48, 0.4);
+  border-radius: 6px;
+  color: #fff;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 7px 10px;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.android-input:focus {
+  border-color: var(--stark-gold);
+  box-shadow: 0 0 10px rgba(255, 170, 48, 0.35);
+}
+
+.android-input::placeholder {
+  color: rgba(255, 170, 48, 0.35);
+}
+
+.android-action-row {
+  display: flex;
+  gap: 6px;
+}
+
+.android-action-btn {
+  flex: 1;
+  height: 36px;
+  padding: 0 10px;
+  background: rgba(30, 15, 5, 0.7);
+  border: 1px solid rgba(255, 170, 48, 0.45);
+  border-radius: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--stark-gold);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.android-action-btn:hover {
+  transform: translateY(-1px);
+}
+
+.android-action-btn.connect-btn {
+  flex: none;
+  padding: 0 14px;
+}
+
+.android-action-btn.unlock-btn {
+  background: rgba(0, 60, 25, 0.6) !important;
+  border-color: rgba(0, 255, 136, 0.7) !important;
+  color: #66ffb2 !important;
+  text-shadow: 0 0 8px rgba(0, 255, 136, 0.8) !important;
+}
+
+.android-action-btn.unlock-btn:hover {
+  background: rgba(0, 90, 40, 0.8) !important;
+  box-shadow: 0 0 14px rgba(0, 255, 136, 0.5) !important;
+}
+
+.android-action-btn.lock-btn {
+  background: rgba(60, 15, 25, 0.6) !important;
+  border-color: rgba(255, 51, 102, 0.7) !important;
+  color: #ff99aa !important;
+}
+
+.android-action-btn.lock-btn:hover {
+  background: rgba(90, 20, 35, 0.8) !important;
+  box-shadow: 0 0 14px rgba(255, 51, 102, 0.5) !important;
+}
+
+.android-action-btn.scan-btn {
+  background: rgba(50, 25, 6, 0.7) !important;
+  border-color: rgba(255, 170, 48, 0.7) !important;
+}
+
+.android-action-btn.wifi-btn {
+  background: rgba(0, 30, 60, 0.7) !important;
+  border-color: rgba(0, 200, 255, 0.6) !important;
+  color: #66e0ff !important;
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.7) !important;
+}
+
+.android-action-btn.wifi-btn:hover {
+  background: rgba(0, 55, 100, 0.85) !important;
+  box-shadow: 0 0 14px rgba(0, 200, 255, 0.45) !important;
+}
+
+/* Device unauthorized state */
+.android-device-item.unauthorized {
+  border-color: rgba(255, 200, 0, 0.5) !important;
+  background: rgba(40, 30, 0, 0.6) !important;
+  animation: warnPulse 2s infinite ease-in-out;
+}
+
+@keyframes warnPulse {
+  0%, 100% { border-color: rgba(255, 200, 0, 0.4); }
+  50% { border-color: rgba(255, 200, 0, 0.9); box-shadow: 0 0 10px rgba(255, 200, 0, 0.3); }
+}
+
+.device-dot.warning {
+  background: #ffcc00 !important;
+  box-shadow: 0 0 8px #ffcc00 !important;
+}
+
+.device-dot.online {
+  background: var(--stark-emerald);
+  box-shadow: 0 0 6px var(--stark-emerald);
+}
+
+.device-tag.warning {
+  background: rgba(255, 200, 0, 0.15) !important;
+  border-color: rgba(255, 200, 0, 0.5) !important;
+  color: #ffcc00 !important;
+}
+
+/* Wi-Fi connection guide panel */
+.android-wifi-guide {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgba(0, 200, 255, 0.8);
+  background: rgba(0, 20, 40, 0.5);
+  border: 1px dashed rgba(0, 200, 255, 0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  line-height: 1.6;
+}
+
+.android-wifi-guide b {
+  color: #66e0ff;
+  font-weight: 700;
+}
+
+.android-wifi-guide .guide-step {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.android-wifi-guide .step-num {
+  color: #ffaa30;
+  flex-shrink: 0;
+}
+
+.android-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.android-status-bar.success {
+  background: rgba(0, 60, 25, 0.5);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  color: #66ffb2;
+}
+
+.android-status-bar.error {
+  background: rgba(60, 0, 15, 0.5);
+  border: 1px solid rgba(255, 51, 102, 0.4);
+  color: #ff99aa;
+}
+
+.android-status-bar.info {
+  background: rgba(0, 20, 50, 0.5);
+  border: 1px solid rgba(0, 200, 255, 0.35);
+  color: #66ccff;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   HOLOGRAPHIC CONVERSATION CONSOLE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.chat-console {
+  position: fixed;
+  bottom: 24px;
+  left: 28px;
+  width: 380px;
+  max-width: calc(100vw - 56px);
+  background: linear-gradient(180deg, rgba(16, 9, 3, 0.92) 0%, rgba(8, 4, 1, 0.96) 100%);
+  border: 1px solid rgba(255, 170, 48, 0.55);
+  border-radius: 12px;
+  box-shadow:
+    0 0 35px rgba(255, 140, 20, 0.22),
+    0 14px 40px rgba(0, 0, 0, 0.9),
+    inset 0 0 16px rgba(255, 170, 48, 0.08);
+  backdrop-filter: blur(16px);
+  z-index: 38;
+  display: flex;
+  flex-direction: column;
+  animation: panelSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-console ~ .hud-hint {
+  display: none;
+}
+
+.chat-console-header {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 170, 48, 0.3);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--stark-amber);
+}
+
+.chat-console-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--stark-amber);
+  box-shadow: 0 0 6px var(--stark-amber);
+}
+
+.chat-status-dot.listening {
+  background: var(--stark-cyan);
+  box-shadow: 0 0 10px var(--stark-cyan);
+  animation: hudPulseDot 0.8s infinite alternate;
+}
+
+.chat-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 170, 48, 0.7);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  transition: all 0.15s ease;
+}
+
+.chat-close-btn:hover {
+  color: #fff;
+  text-shadow: 0 0 8px #fff;
+}
+
+.chat-history {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 170, 48, 0.4) transparent;
+}
+
+.chat-msg {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.chat-msg.user {
+  align-self: flex-end;
+  background: rgba(0, 45, 80, 0.65);
+  border-left: 2px solid var(--stark-cyan);
+  color: #d8f0ff;
+  text-shadow: 0 0 4px rgba(0, 240, 255, 0.5);
+  max-width: 85%;
+}
+
+.chat-msg.assistant {
+  align-self: flex-start;
+  background: rgba(45, 24, 6, 0.75);
+  border-left: 2px solid var(--stark-amber);
+  color: #ffe6b3;
+  text-shadow: 0 0 4px rgba(255, 170, 48, 0.5);
+  max-width: 90%;
+}
+
+.chat-msg-role {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  opacity: 0.8;
+  margin-bottom: 3px;
+}
+
+.chat-chips {
+  display: flex;
+  gap: 6px;
+  padding: 6px 14px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.chat-chip {
+  white-space: nowrap;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 9px;
+  background: rgba(35, 18, 5, 0.65);
+  border: 1px solid rgba(255, 170, 48, 0.35);
+  border-radius: 12px;
+  color: var(--stark-gold);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-chip:hover {
+  background: rgba(75, 38, 8, 0.85);
+  border-color: var(--stark-amber);
+  box-shadow: 0 0 10px rgba(255, 170, 48, 0.4);
+}
+
+.chat-input-row {
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(255, 170, 48, 0.25);
+}
+
+.chat-input {
+  flex: 1;
+  background: rgba(14, 7, 2, 0.8);
+  border: 1px solid rgba(255, 170, 48, 0.4);
+  border-radius: 6px;
+  padding: 7px 12px;
+  color: #fff;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.chat-input:focus {
+  border-color: var(--stark-gold);
+  box-shadow: 0 0 10px rgba(255, 170, 48, 0.35);
+}
+
+.chat-send-btn {
+  padding: 0 14px;
+  height: 34px;
+  background: rgba(50, 25, 7, 0.85);
+  border: 1px solid rgba(255, 170, 48, 0.6);
+  border-radius: 6px;
+  color: var(--stark-gold);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chat-send-btn:hover {
+  background: rgba(90, 45, 10, 0.95);
+  border-color: #ffe082;
+  box-shadow: 0 0 12px rgba(255, 170, 48, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   STARTUP INTERACTIVE BOOT GATE
+   ═══════════════════════════════════════════════════════════════════════════ */
+.startup-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(14, 7, 2, 0.94) 0%, rgba(0, 0, 0, 0.99) 100%);
+  cursor: pointer;
+}
+
+.startup-gate-ring {
+  width: 150px;
+  height: 150px;
+  border: 2px solid rgba(255, 170, 48, 0.75);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 0 40px rgba(255, 140, 20, 0.45),
+    inset 0 0 25px rgba(255, 140, 20, 0.25);
+  animation: hudPulse 2s infinite ease-in-out;
+  margin-bottom: 24px;
+}
+
+.startup-gate-icon {
+  font-size: 46px;
+  color: var(--stark-amber);
+  text-shadow: 0 0 20px rgba(255, 170, 48, 0.9);
+}
+
+.startup-gate-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.38em;
+  color: var(--stark-gold);
+  text-shadow: 0 0 16px rgba(255, 170, 48, 0.9);
+  margin-bottom: 8px;
+}
+
+.startup-gate-subtext {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: rgba(255, 170, 48, 0.65);
+}
+
+/* Animations */
 @keyframes hudPulse {
   0%, 100% {
     border-color: rgba(255, 170, 48, 0.5);
   }
   50% {
-    border-color: rgba(255, 200, 100, 0.8);
+    border-color: rgba(255, 204, 102, 0.9);
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE DESIGN BREAKPOINTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .hud-command-deck {
+    gap: 8px;
+    padding: 6px 12px;
+  }
+  .deck-btn {
+    height: 44px;
+    padding: 0 10px;
+    gap: 6px;
+  }
+  .deck-btn-title {
+    font-size: 11px;
+  }
+  .deck-core-btn {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 680px) {
+  .hud-hint {
+    display: none;
+  }
+  .hud-title-sub,
+  .hud-title-prefix {
+    display: none;
+  }
+  .hud-command-container {
+    bottom: 12px;
+    width: 95%;
+  }
+  .hud-command-deck {
+    width: 100%;
+    justify-content: space-around;
+    gap: 4px;
+  }
+  .deck-btn-shortcut,
+  .deck-section-tag {
+    display: none;
+  }
+  .camera-panel {
+    right: 50%;
+    transform: translateX(50%);
+  }
+  .android-panel {
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 32px);
+  }
+  .chat-console {
+    left: 16px;
+    right: 16px;
+    width: auto;
+    bottom: 90px;
+  }
+}
